@@ -28,22 +28,25 @@ cors_proxy.createServer({
   removeHeaders: [
     'cookie',
     'cookie2',
-    // Strip Heroku-specific headers
     'x-request-start',
     'x-request-id',
     'via',
     'connect-time',
     'total-route-time',
-    // Other Heroku added debug headers
-    // 'x-forwarded-for',
-    // 'x-forwarded-proto',
-    // 'x-forwarded-port',
   ],
   redirectSameOrigin: true,
   httpProxyOptions: {
-    // Do not add X-Forwarded-For, etc. headers, because Heroku already adds it.
     xfwd: false,
   },
+  // 👇 Add custom headers dynamically
+  setHeaders: function(res, req) {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin); // NOT "*"
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+  }
 }).listen(port, host, function() {
-  console.log('Running CORS Anywhere on ' + host + ':' + port);
+  console.log('✅ Running CORS Anywhere on ' + host + ':' + port);
 });
